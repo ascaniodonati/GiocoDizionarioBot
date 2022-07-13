@@ -4,6 +4,4 @@ using GiocoDizionarioBot;
 Console.WriteLine("Il bot è stato avviato");
 Bot.Start();
 
-
-
 Console.ReadLine();
