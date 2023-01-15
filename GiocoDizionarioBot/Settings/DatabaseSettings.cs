@@ -8,7 +8,7 @@ namespace GiocoDizionarioBot.Settings
 {
     public static class DatabaseSettings
     {
-        public const string ServerName = "localhost";
+        public const string ServerName = "TERMINATOR\\SQLEXPRESS";
         public const string DatabaseName = "giocodizionariobot";
 
         public static string ConnectionString => $"Server={ServerName};Database={DatabaseName};Trusted_Connection=True;";

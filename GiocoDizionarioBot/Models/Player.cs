@@ -7,13 +7,11 @@ using System.Threading.Tasks;
 
 namespace GiocoDizionarioBot.Models
 {
-    public class IPlayer
+    public class Player
     {
-        public long ID { get; set; }
+        [Key]
         public long TelegramID { get; set; }
         public string Username { get; set; }
-        public int GamesWons { get; set; }
-        public int GameLosts { get; set; }
     }
 
 }

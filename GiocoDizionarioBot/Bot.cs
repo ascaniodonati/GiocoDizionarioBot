@@ -22,6 +22,8 @@ namespace GiocoDizionarioBot
         private static readonly ILog logger = LogManager.GetLogger(typeof(Bot));
         private static TelegramBotClient? botClient;
 
+        #region TELEGRAM BOT HANDLING
+
         public static void Start()
         {
             log4net.Config.BasicConfigurator.Configure();
@@ -40,10 +42,7 @@ namespace GiocoDizionarioBot
                 receiverOptions,
                 cts.Token
             );
-
-            logger.Info("Il bot è stato avviato");
         }
-
 
         async static Task HandleErrorAsync(ITelegramBotClient botClient, Exception ex, CancellationToken ct)
         {
@@ -52,9 +51,6 @@ namespace GiocoDizionarioBot
 
         async static Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cts)
         {
-            //Se non è un messaggio non va gestito a prescindere
-            if (update.Type != UpdateType.Message) { return; }
-
             //Controlliamo che sia un messaggio di testo e se sì lo gestiamo
             if (update?.Message?.Type == MessageType.Text)
             {
@@ -66,7 +62,13 @@ namespace GiocoDizionarioBot
                 }
             }
 
-            return;
+            else if (update?.Type == UpdateType.CallbackQuery)
+            {
+                await botClient.SendTextMessageAsync(update.CallbackQuery.From.Id, $"Risposta: {update.CallbackQuery.Data}");
+            }
+
+            //Se non è un messaggio non va gestito a prescindere
+            else return;
         }
 
         public async static Task HandleTelegramCommands(Update update, ITelegramBotClient botClient)
@@ -82,31 +84,32 @@ namespace GiocoDizionarioBot
             if (messageWithParameters.Length > 0)
             {
                 string inputCommand = messageWithParameters[0].Substring(1);
-                bool foundCommand = false;
+                string[]? parameters = messageWithParameters.Length > 1 ? messageWithParameters.Skip(1).ToArray() : null;
 
-                foreach(var commandMethod in commandMethods)
+                foreach (var commandMethod in commandMethods)
                 {
                     Command commandAttribute = Attribute.GetCustomAttributes(commandMethod, typeof(Command)).FirstOrDefault() as Command;
 
                     if (commandAttribute?.Trigger == inputCommand)
                     {
-                        commandMethod.Invoke(typeof(GameCommands), new object[] { update, botClient });
-                        foundCommand = true;
+                        if (commandAttribute.OnlyGroup && update.Message.Chat.Type == ChatType.Private)
+                        {
+                            SendMessage(update.Message.Chat, "Questo comando è solo per i gruppi");
+                        }
+                        else
+                        {
+                            commandMethod.Invoke(typeof(GameCommands), new object[] { update, botClient, parameters });
+                        }
                     }
                 }
-
-                if (!foundCommand)
-                    await botClient.SendTextMessageAsync(update?.Message?.Chat.Id, "Attenzione! Il comando non esiste.");
-                else
-                    foundCommand = false;
-
-                Console.WriteLine("Break");
             }
         }
-        
+
         public static async Task SendMessage(ChatId chatId, string messageText, IReplyMarkup replyMarkup = null)
         {
             await botClient.SendTextMessageAsync(chatId, messageText, replyMarkup: replyMarkup);
         }
+
+        #endregion
     }
 }

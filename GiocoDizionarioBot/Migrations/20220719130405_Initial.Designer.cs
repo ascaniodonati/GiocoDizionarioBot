@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GiocoDizionarioBot.Migrations
 {
     [DbContext(typeof(GameContext))]
-    [Migration("20220506133338_InitialCommitGiocoDizionario")]
-    partial class InitialCommitGiocoDizionario
+    [Migration("20220719130405_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,28 +23,32 @@ namespace GiocoDizionarioBot.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("GiocoDizionarioBot.Models.IPlayer", b =>
+            modelBuilder.Entity("GiocoDizionarioBot.DB.Group", b =>
                 {
-                    b.Property<long>("ID")
+                    b.Property<long>("TelegramGroupId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ID"), 1L, 1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TelegramGroupId"), 1L, 1);
 
-                    b.Property<int>("GameLosts")
-                        .HasColumnType("int");
+                    b.HasKey("TelegramGroupId");
 
-                    b.Property<int>("GamesWons")
-                        .HasColumnType("int");
+                    b.ToTable("Groups");
+                });
 
+            modelBuilder.Entity("GiocoDizionarioBot.Models.Player", b =>
+                {
                     b.Property<long>("TelegramID")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TelegramID"), 1L, 1);
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ID");
+                    b.HasKey("TelegramID");
 
                     b.ToTable("Players");
                 });
